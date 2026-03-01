@@ -457,8 +457,8 @@
 {% block content %}
 <div class="hero-section">
     <h1>💰 <span class="gradient-text">Welcome to SmartSpend</span></h1>
-    <p class="tagline">"Do not save what is left after spending, but spend what is left after saving" 
-        — Warren Buffett</p>
+    <p class="tagline">"Do not save what is left after spending, but spend what is left after saving 
+        — Warren Buffett"</p>
 </div>
 
 <!-- Stats Cards -->
@@ -529,7 +529,7 @@
             <div class="category-item">
                 <div class="category-name">{{ category['category'] }}</div>
                 <div class="category-bar">
-                    <div class="category-bar-fill" style="width: {{ (category['total'] / max_category_total * 100)|round }}%;"></div>
+                    <div class="category-bar-fill" style="width: {{ ((category['total'] / max_category_total * 100)|round)|string }}%"></div>
                 </div>
                 <div class="category-amount">₹{{ "%.0f"|format(category['total']) }}</div>
             </div>
