@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_from_directory
 import sqlite3
 import os
+from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -19,7 +20,7 @@ def get_database_path():
     return os.path.join(BASE_DIR, "expenses.db")
 
 
-app = Flask(__name__, template_folder=BASE_DIR)
+app = Flask(__name__)
 
 DATABASE = get_database_path()
 
@@ -47,31 +48,67 @@ def init_db():
 
 init_db()
 
+# Dashboard Route
 @app.route('/')
 def index():
     conn = get_db_connection()
+    
+    # Get all expenses
     expenses = conn.execute('SELECT * FROM expenses ORDER BY date DESC').fetchall()
     
     # Calculate total expense
     total_result = conn.execute('SELECT SUM(amount) as total FROM expenses').fetchone()
     total_expense = total_result['total'] if total_result['total'] else 0
     
-    # Calculate monthly totals
-    monthly_totals = conn.execute('''
-        SELECT strftime('%Y-%m', date) as month, SUM(amount) as total 
+    # Get expense count
+    count_result = conn.execute('SELECT COUNT(*) as count FROM expenses').fetchone()
+    expense_count = count_result['count']
+    
+    # Get recent expenses (last 5)
+    recent_expenses = conn.execute('SELECT * FROM expenses ORDER BY date DESC LIMIT 5').fetchall()
+    
+    # Get current month total
+    current_month = datetime.now().strftime('%Y-%m')
+    current_month_result = conn.execute(
+        'SELECT SUM(amount) as total FROM expenses WHERE strftime("%Y-%m", date) = ?',
+        (current_month,)
+    ).fetchone()
+    current_month_total = current_month_result['total'] if current_month_result['total'] else 0
+    
+    # Get category totals
+    category_totals = conn.execute('''
+        SELECT category, SUM(amount) as total 
         FROM expenses 
-        GROUP BY strftime('%Y-%m', date)
-        ORDER BY month DESC
+        GROUP BY category 
+        ORDER BY total DESC
+        LIMIT 5
     ''').fetchall()
     
+    # Get max category total for progress bar
+    max_category_total = category_totals[0]['total'] if category_totals else 1
+    
     conn.close()
-    return render_template('index.html', expenses=expenses, total_expense=total_expense, monthly_totals=monthly_totals)
+    
+    return render_template('index.html',
+                         expenses=expenses,
+                         total_expense=total_expense,
+                         expense_count=expense_count,
+                         recent_expenses=recent_expenses,
+                         current_month_total=current_month_total,
+                         category_totals=category_totals,
+                         max_category_total=max_category_total)
 
+# Add Expense Page Route
+@app.route('/add', methods=['GET'])
+def add_expense_page():
+    return render_template('add_expense.html')
+
+# Add Expense Form Submission Route
 @app.route('/add', methods=['POST'])
 def add_expense():
     amount = request.form['amount']
     category = request.form['category']
-    description = request.form['description']
+    description = request.form.get('description', '')
     date = request.form['date']
     
     conn = get_db_connection()
@@ -80,7 +117,93 @@ def add_expense():
     conn.commit()
     conn.close()
     
-    return redirect('/')
+    return redirect('/expenses')
+
+# Track Expenses Page Route
+@app.route('/expenses')
+def expenses_page():
+    conn = get_db_connection()
+    
+    # Get all expenses
+    expenses = conn.execute('SELECT * FROM expenses ORDER BY date DESC').fetchall()
+    
+    # Calculate total expense
+    total_result = conn.execute('SELECT SUM(amount) as total FROM expenses').fetchone()
+    total_expense = total_result['total'] if total_result['total'] else 0
+    
+    conn.close()
+    
+    return render_template('expenses.html', expenses=expenses, total_expense=total_expense)
+
+# Analytics Page Route
+@app.route('/analytics')
+def analytics_page():
+    conn = get_db_connection()
+    
+    # Get all expenses
+    expenses = conn.execute('SELECT * FROM expenses ORDER BY date DESC').fetchall()
+    
+    # Calculate total expense
+    total_result = conn.execute('SELECT SUM(amount) as total FROM expenses').fetchone()
+    total_expense = total_result['total'] if total_result['total'] else 0
+    
+    # Get expense count
+    count_result = conn.execute('SELECT COUNT(*) as count FROM expenses').fetchone()
+    expense_count = count_result['count']
+    
+    # Calculate average expense
+    average_expense = total_expense / expense_count if expense_count > 0 else 0
+    
+    # Get current month total
+    current_month = datetime.now().strftime('%Y-%m')
+    current_month_result = conn.execute(
+        'SELECT SUM(amount) as total FROM expenses WHERE strftime("%Y-%m", date) = ?',
+        (current_month,)
+    ).fetchone()
+    current_month_total = current_month_result['total'] if current_month_result['total'] else 0
+    
+    # Get category data for charts
+    category_data = conn.execute('''
+        SELECT category, SUM(amount) as total 
+        FROM expenses 
+        GROUP BY category 
+        ORDER BY total DESC
+    ''').fetchall()
+    
+    # Get top category
+    top_category = category_data[0]['category'] if category_data else 'N/A'
+    
+    # Get monthly data for trend chart
+    monthly_data = conn.execute('''
+        SELECT strftime('%Y-%m', date) as month, SUM(amount) as total 
+        FROM expenses 
+        GROUP BY strftime('%Y-%m', date)
+        ORDER BY month ASC
+    ''').fetchall()
+    
+    conn.close()
+    
+    # Convert to list of dicts for JavaScript
+    category_data_list = [dict(row) for row in category_data]
+    monthly_data_list = [dict(row) for row in monthly_data]
+    
+    return render_template('analytics.html',
+                         expenses=expenses,
+                         total_expense=total_expense,
+                         average_expense=average_expense,
+                         current_month_total=current_month_total,
+                         top_category=top_category,
+                         category_data=category_data_list,
+                         monthly_data=monthly_data_list)
+
+# Favicon Routes
+@app.route('/favicon.png')
+def favicon_png():
+    return send_from_directory(BASE_DIR, 'favicon.png', mimetype='image/png')
+
+@app.route('/favicon.svg')
+def favicon_svg():
+    return send_from_directory(BASE_DIR, 'favicon.svg', mimetype='image/svg+xml')
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))

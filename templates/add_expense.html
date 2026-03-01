@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense - SmartSpend{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        text-align: center;
+        color: white;
+        margin-bottom: 60px;
+    }
+
+    .page-header h1 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2.5em;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    .page-header h1 .gradient-text {
+        background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .page-header p {
+        font-size: 1.1em;
+        opacity: 0.85;
+        color: #F0F9FF;
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+        padding: 10px 25px;
+        border-radius: 25px;
+        display: inline-block;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        backdrop-filter: blur(10px);
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #1E293B;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        border: 1px solid #334155;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        color: #CBD5E1;
+        font-weight: 500;
+        font-size: 0.95em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    label i {
+        margin-right: 5px;
+        color: #4ADE80;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #334155;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        background-color: #0F172A;
+        color: #F0F4F8;
+    }
+
+    input::placeholder, select::placeholder, textarea::placeholder {
+        color: #64748B;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #22C55E;
+        background-color: #0F172A;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15), 0 0 0 1px #22C55E;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+        font-size: 0.95em;
+    }
+
+    select {
+        cursor: pointer;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.15);
+        transition: left 0.4s ease;
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+
+    .quick-categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .quick-category-btn {
+        padding: 10px;
+        background: #0F172A;
+        border: 2px solid #334155;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+        font-size: 0.9em;
+        color: #CBD5E1;
+    }
+
+    .quick-category-btn:hover {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: #22C55E;
+        color: #4ADE80;
+    }
+
+    .quick-category-btn.selected {
+        background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+        color: white;
+        border-color: #22C55E;
+    }
+
+    .input-icon {
+        position: relative;
+    }
+
+    .input-icon i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4ADE80;
+        font-size: 1.1em;
+    }
+
+    .input-icon input {
+        padding-left: 45px;
+    }
+
+    .cancel-btn {
+        width: 100%;
+        padding: 14px;
+        background: #0F172A;
+        color: #CBD5E1;
+        border: 2px solid #334155;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 500;
+        margin-top: 10px;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .cancel-btn:hover {
+        background: #334155;
+        border-color: #A855F7;
+        color: #C084FC;
+    }
+
+    @media (max-width: 600px) {
+        .form-container {
+            padding: 25px;
+        }
+
+        .page-header h1 {
+            font-size: 2em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>✨ <span class="gradient-text">Add New Expense</span></h1>
+    <p style="margin-bottom: 50px>Track your spending and manage your finances</p>
+</div>
+
+<div class="form-container">
+    <form action="/add" method="POST">
+        <div class="form-group">
+            <label for="amount"><i class="fas fa-rupee-sign"></i> Amount</label>
+            <div class="input-icon">
+                <i class="fas fa-rupee-sign"></i>
+                <input type="number" id="amount" name="amount" step="0.01" placeholder="Enter amount" required autofocus>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="category"><i class="fas fa-tags"></i> Category</label>
+            <select id="category" name="category" required>
+                <option value="">Select a category</option>
+                <option value="Food">🍔 Food & Dining</option>
+                <option value="Transportation">🚗 Transportation</option>
+                <option value="Entertainment">🎬 Entertainment</option>
+                <option value="Utilities">💡 Utilities & Bills</option>
+                <option value="Healthcare">🏥 Healthcare</option>
+                <option value="Shopping">🛍️ Shopping</option>
+                <option value="Education">📚 Education</option>
+                <option value="Travel">✈️ Travel</option>
+                <option value="Other">📌 Other</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="description"><i class="fas fa-align-left"></i> Description</label>
+            <textarea id="description" name="description" placeholder="Add details about this expense (optional)"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="date"><i class="fas fa-calendar"></i> Date</label>
+            <input type="date" id="date" name="date" required>
+        </div>
+        
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-plus-circle"></i> Add Expense
+        </button>
+        
+        <a href="/" class="cancel-btn">Cancel</a>
+    </form>
+</div>
+
+<script>
+    // Set today's date as default
+    document.getElementById('date').valueAsDate = new Date();
+</script>
+{% endblock %}
