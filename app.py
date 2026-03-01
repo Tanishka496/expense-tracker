@@ -2,13 +2,34 @@ from flask import Flask, render_template, request, redirect
 import sqlite3
 import os
 
-app = Flask(__name__, template_folder='.')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DATABASE = "expenses.db"
+
+def get_database_path():
+    custom_path = os.getenv("DATABASE_PATH")
+    if custom_path:
+        return custom_path
+
+    if os.getenv("WEBSITE_INSTANCE_ID"):
+        home_dir = os.getenv("HOME", "/home")
+        data_dir = os.path.join(home_dir, "data")
+        os.makedirs(data_dir, exist_ok=True)
+        return os.path.join(data_dir, "expenses.db")
+
+    return os.path.join(BASE_DIR, "expenses.db")
+
+
+app = Flask(__name__, template_folder=BASE_DIR)
+
+DATABASE = get_database_path()
+
+
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
+
+
 def init_db():
     conn = get_db_connection()
     conn.execute('''
@@ -22,6 +43,9 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+
+
+init_db()
 
 @app.route('/')
 def index():
@@ -59,5 +83,4 @@ def add_expense():
     return redirect('/')
 
 if __name__ == '__main__':
-    init_db()
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
