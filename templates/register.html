@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - SmartSpend</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0F172A;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #E2E8F0;
+        }
+
+        .auth-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            max-width: 1000px;
+            width: 100%;
+            height: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .auth-form-section {
+            background: #1E293B;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            border: 1px solid #334155;
+            overflow-y: auto;
+            gap: 0;
+        }
+
+        .form-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100%;
+        }
+
+        .auth-banner {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-left: 1px solid #334155;
+            min-height: 600px;
+        }
+
+        .banner-logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .banner-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #60A5FA 0%, #A855F7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .banner-text {
+            color: #CBD5E1;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .banner-features {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+            margin-top: 30px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #94A3B8;
+            font-size: 0.95em;
+        }
+
+        .feature-item i {
+            color: #4ADE80;
+            font-size: 1.2em;
+        }
+
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            color: #60A5FA;
+            text-decoration: none;
+        }
+
+        .auth-logo-icon {
+            font-size: 2em;
+        }
+
+        .auth-logo-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .auth-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #F0F4F8;
+        }
+
+        .auth-subtitle {
+            color: #94A3B8;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #CBD5E1;
+            font-weight: 500;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group label i {
+            margin-right: 5px;
+            color: #10B981;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #334155;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            background-color: #0F172A;
+            color: #F0F4F8;
+        }
+
+        .form-group input::placeholder {
+            color: #64748B;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #10B981;
+            background-color: #0F172A;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), 0 0 0 1px #10B981;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+            color: #FCA5A5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 3px solid #EF4444;
+            margin-bottom: 25px;
+            display: none;
+            font-size: 0.95em;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .password-requirement {
+            color: #94A3B8;
+            font-size: 0.85em;
+            margin-top: 5px;
+            padding: 8px 12px;
+            background: rgba(148, 163, 184, 0.1);
+            border-radius: 6px;
+            border-left: 2px solid #64748B;
+        }
+
+        .password-toggle {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-toggle input {
+            width: 100%;
+            padding: 12px 16px;
+            padding-right: 50px;
+            border: 2px solid #334155;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            background-color: #0F172A;
+            color: #F0F4F8;
+        }
+
+        .password-toggle input::placeholder {
+            color: #64748B;
+        }
+
+        .password-toggle input:focus {
+            outline: none;
+            border-color: #10B981;
+            background-color: #0F172A;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), 0 0 0 1px #10B981;
+        }
+
+        .toggle-password-btn {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #10B981;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle-password-btn:hover {
+            color: #6EE7B7;
+        }
+
+        .strength-meter {
+            height: 4px;
+            background: #334155;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .strength-meter-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .strength-meter-fill.weak {
+            width: 33%;
+            background: #EF4444;
+        }
+
+        .strength-meter-fill.fair {
+            width: 66%;
+            background: #F97316;
+        }
+
+        .strength-meter-fill.strong {
+            width: 100%;
+            background: #10B981;
+        }
+
+        .strength-text {
+            font-size: 0.8em;
+            margin-top: 4px;
+            color: #94A3B8;
+        }
+
+        .strength-text.weak { color: #EF4444; }
+        .strength-text.fair { color: #F97316; }
+        .strength-text.strong { color: #10B981; }
+
+        .btn-register {
+            width: 100%;
+            padding: 13px 20px;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-register:active {
+            transform: translateY(0);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #CBD5E1;
+            font-size: 0.95em;
+        }
+
+        .auth-footer a {
+            color: #60A5FA;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .auth-footer a:hover {
+            color: #93C5FD;
+            text-decoration: underline;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            gap: 15px;
+            color: #475569;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #334155;
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                grid-template-columns: 1fr;
+            }
+
+            .auth-banner {
+                display: none;
+            }
+
+            .auth-form-section {
+                padding: 40px 30px;
+            }
+
+            .auth-title {
+                font-size: 1.8em;
+            }
+
+            .auth-subtitle {
+                margin-bottom: 20px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+
+    <script>
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const btn = event.target.closest('button');
+            if (field.type === 'password') {
+                field.type = 'text';
+                btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                field.type = 'password';
+                btn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const meter = document.getElementById('strengthMeter');
+            const text = document.getElementById('strengthText');
+            
+            let strength = 0;
+
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength++;
+
+            meter.classList.remove('weak', 'fair', 'strong');
+            text.classList.remove('weak', 'fair', 'strong');
+
+            if (strength < 2) {
+                meter.classList.add('weak');
+                text.classList.add('weak');
+                text.textContent = 'Strength: Weak';
+            } else if (strength < 4) {
+                meter.classList.add('fair');
+                text.classList.add('fair');
+                text.textContent = 'Strength: Fair';
+            } else {
+                meter.classList.add('strong');
+                text.classList.add('strong');
+                text.textContent = 'Strength: Strong';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Form Section -->
+        <div class="auth-form-section">
+            <div class="form-wrapper">
+                <div class="auth-logo">
+                    <span class="auth-logo-icon">💰</span>
+                    <span class="auth-logo-text">SmartSpend</span>
+                </div>
+
+                <div>
+                    <h1 class="auth-title">Create Account</h1>
+                    <p class="auth-subtitle">Start managing your expenses today</p>
+
+                    {% if error %}
+                    <div class="error-message show">
+                        <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
+                        {{ error }}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST">
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user"></i>Username
+                        </label>
+                        <input type="text" id="username" name="username" placeholder="Choose a username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>Email
+                        </label>
+                        <input type="email" id="email" name="email" placeholder="Your email address" required>
+                    </div>
+
+                    <div class="form-group password-toggle">
+                        <label for="password">
+                            <i class="fas fa-lock"></i>Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="password" name="password" placeholder="Create a strong password" required onkeyup="checkPasswordStrength()">
+                            <button type="button" class="toggle-password-btn" onclick="togglePassword('password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="strength-meter">
+                            <div class="strength-meter-fill" id="strengthMeter"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText">Strength: --</div>
+                        <div class="password-requirement">
+                            <i class="fas fa-info-circle" style="margin-right: 5px;"></i>Must be at least 6 characters
+                        </div>
+                    </div>
+
+                    <div class="form-group password-toggle">
+                        <label for="confirm_password">
+                            <i class="fas fa-lock"></i>Confirm Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required>
+                            <button type="button" class="toggle-password-btn" onclick="togglePassword('confirm_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-register">
+                        <i class="fas fa-user-plus"></i>Create Account
+                    </button>
+                </form>
+
+                <div class="divider">or</div>
+
+                <div class="auth-footer">
+                    Already have an account? <a href="/login"><strong>Sign in here</strong></a>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banner Section -->
+        <div class="auth-banner">
+            <div class="banner-logo">🎯</div>
+            <h2 class="banner-title">SmartSpend</h2>
+            <p class="banner-text">Your personal expense tracking companion</p>
+
+            <div class="banner-features">
+                <div class="feature-item">
+                    <i class="fas fa-chart-pie"></i>
+                    Track expenses in real-time
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-lock"></i>
+                    100% secure & private
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-download"></i>
+                    Export your data anytime
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    Access anywhere
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

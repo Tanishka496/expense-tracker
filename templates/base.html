@@ -93,6 +93,121 @@
             font-size: 1.1em;
         }
 
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #F0F4F8;
+            font-size: 0.95em;
+        }
+
+        .user-role {
+            color: #94A3B8;
+            font-size: 0.8em;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60A5FA 0%, #A855F7 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.4);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            min-width: 200px;
+            display: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #334155;
+            background: rgba(96, 165, 250, 0.05);
+        }
+
+        .dropdown-header .user-name {
+            font-size: 1em;
+            margin-bottom: 2px;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            color: #CBD5E1;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #334155;
+        }
+
+        .dropdown-item:hover {
+            background: #0F172A;
+            color: #60A5FA;
+            padding-left: 25px;
+        }
+
+        .dropdown-item.danger {
+            color: #EF4444;
+        }
+
+        .dropdown-item.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #FCA5A5;
+        }
+
+        .dropdown-item i {
+            font-size: 1em;
+            width: 20px;
+        }
+
         /* Mobile Menu Toggle */
         .mobile-toggle {
             display: none;
@@ -178,7 +293,7 @@
             </button>
 
             <ul class="nav-menu" id="navMenu">
-                <li><a href="/" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <li><a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
                     <i class="fas fa-home"></i> Dashboard
                 </a></li>
                 <li><a href="/add" class="nav-link {% if request.endpoint == 'add_expense_page' %}active{% endif %}">
@@ -190,6 +305,39 @@
                 <li><a href="/analytics" class="nav-link {% if request.endpoint == 'analytics_page' %}active{% endif %}">
                     <i class="fas fa-chart-pie"></i> Analytics
                 </a></li>
+                {% if username %}
+                <li style="margin-left: auto; display: flex; align-items: center; position: relative;">
+                    <div class="user-profile" onclick="toggleDropdown(event)">
+                        <div class="user-info">
+                            <div class="user-name">{{ username }}</div>
+                            <div class="user-role">Member</div>
+                        </div>
+                        <div class="user-avatar" id="userAvatar">{{ username[0].upper() }}</div>
+                    </div>
+                    
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <div class="user-name">{{ username }}</div>
+                            <div class="user-role">Expense Tracker</div>
+                        </div>
+                        <a href="/" class="dropdown-item">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                        <a href="/expenses" class="dropdown-item">
+                            <i class="fas fa-list-ul"></i> My Expenses
+                        </a>
+                        <a href="/analytics" class="dropdown-item">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </a>
+                        <a href="/profile" class="dropdown-item">
+                            <i class="fas fa-user-cog"></i> Profile Settings
+                        </a>
+                        <a href="/logout" class="dropdown-item danger">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </nav>
@@ -205,13 +353,25 @@
             menu.classList.toggle('active');
         }
 
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
         // Close menu when clicking outside
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('navMenu');
+            const dropdown = document.getElementById('dropdownMenu');
             const toggle = document.querySelector('.mobile-toggle');
+            const userProfile = document.querySelector('.user-profile');
             
-            if (!menu.contains(event.target) && !toggle.contains(event.target)) {
+            if (menu && !menu.contains(event.target) && !toggle.contains(event.target)) {
                 menu.classList.remove('active');
+            }
+
+            if (dropdown && !dropdown.contains(event.target) && !userProfile?.contains(event.target)) {
+                dropdown.classList.remove('show');
             }
         });
     </script>

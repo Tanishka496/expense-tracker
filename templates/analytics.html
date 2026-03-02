@@ -39,7 +39,7 @@
 
     .charts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
         gap: 30px;
         margin-bottom: 30px;
     }
@@ -161,6 +161,61 @@
         color: #FB923C;
     }
 
+    .insight-card.teal {
+        background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(13, 148, 136, 0.1) 100%);
+        border: 1px solid rgba(20, 184, 166, 0.3);
+    }
+
+    .insight-card.teal::before {
+        background: linear-gradient(90deg, #14B8A6, #0D9488);
+    }
+
+    .insight-card.teal .insight-value {
+        color: #2DD4BF;
+    }
+
+    .insight-card.compare {
+        grid-column: span 2;
+    }
+
+    .comparison-subtext {
+        margin-top: 10px;
+        font-size: 0.9em;
+        color: #CBD5E1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .trend-badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.8em;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        border: 1px solid transparent;
+    }
+
+    .trend-badge.up {
+        color: #FCA5A5;
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .trend-badge.down {
+        color: #86EFAC;
+        background: rgba(34, 197, 94, 0.15);
+        border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .trend-badge.steady {
+        color: #BFDBFE;
+        background: rgba(59, 130, 246, 0.15);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
     .insight-label {
         font-size: 0.9em;
         color: #CBD5E1;
@@ -200,6 +255,10 @@
     @media (max-width: 768px) {
         .charts-grid {
             grid-template-columns: 1fr;
+        }
+
+        .insight-card.compare {
+            grid-column: span 1;
         }
 
         .page-header h1 {
@@ -245,23 +304,50 @@
         <div class="insight-label">Total Expenses</div>
         <div class="insight-value">₹{{ "%.0f"|format(total_expense) }}</div>
     </div>
+
+    <div class="insight-card teal compare">
+        <div class="insight-icon">📊</div>
+        <div class="insight-label">Month vs Last Month</div>
+        <div class="insight-value">
+            {% if monthly_change_amount > 0 %}
+                +₹{{ "%.0f"|format(monthly_change_amount) }}
+            {% elif monthly_change_amount < 0 %}
+                -₹{{ "%.0f"|format(monthly_change_amount|abs) }}
+            {% else %}
+                ₹0
+            {% endif %}
+        </div>
+        <div class="comparison-subtext">
+            {% if monthly_change_percent is not none %}
+                <span class="trend-badge {{ monthly_change_direction }}">
+                    {% if monthly_change_direction == 'up' %}↑{% elif monthly_change_direction == 'down' %}↓{% else %}→{% endif %}
+                    {{ "%.1f"|format(monthly_change_percent|abs) }}%
+                </span>
+                {% if monthly_change_direction == 'up' %}
+                    increase vs last month
+                {% elif monthly_change_direction == 'down' %}
+                    decrease vs last month
+                {% else %}
+                    same as last month
+                {% endif %}
+            {% else %}
+                {% if current_month_total > 0 %}
+                    New spending this month (no last-month data)
+                {% else %}
+                    No spending in both months
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
 </div>
 
 <!-- Charts -->
 <div class="charts-grid">
     <!-- Category Breakdown Pie Chart -->
     <div class="chart-card">
-        <h2><i class="fas fa-chart-pie"></i> Spending by Category</h2>
+        <h2><i class="fas fa-chart-pie"></i> Category Summary</h2>
         <div class="chart-container">
             <canvas id="categoryPieChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Category Bar Chart -->
-    <div class="chart-card">
-        <h2><i class="fas fa-chart-bar"></i> Category Comparison</h2>
-        <div class="chart-container">
-            <canvas id="categoryBarChart"></canvas>
         </div>
     </div>
     
@@ -345,66 +431,6 @@
                             const percentage = ((value / total) * 100).toFixed(1);
                             return label + ': ₹' + value.toFixed(2) + ' (' + percentage + '%)';
                         }
-                    }
-                }
-            }
-        }
-    });
-    
-    // Category Bar Chart
-    new Chart(document.getElementById('categoryBarChart'), {
-        type: 'bar',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-                label: 'Amount Spent (₹)',
-                data: categoryAmounts,
-                backgroundColor: colors,
-                borderRadius: 8,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleColor: '#F0F4F8',
-                    bodyColor: '#CBD5E1',
-                    borderColor: '#334155',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: function(context) {
-                            return '₹' + context.parsed.y.toFixed(2);
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#CBD5E1',
-                        callback: function(value) {
-                            return '₹' + value;
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(51, 65, 85, 0.3)',
-                        drawBorder: false
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: '#CBD5E1'
-                    },
-                    grid: {
-                        drawBorder: false,
-                        display: false
                     }
                 }
             }

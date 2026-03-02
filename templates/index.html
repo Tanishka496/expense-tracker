@@ -394,6 +394,141 @@
         color: #94A3B8;
     }
 
+    .budget-section {
+        margin-bottom: 35px;
+    }
+
+    .budget-row {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .budget-form {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .budget-input-wrap {
+        flex: 1;
+        position: relative;
+    }
+
+    .budget-input-wrap i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #60A5FA;
+    }
+
+    .budget-input {
+        width: 100%;
+        padding: 13px 14px 13px 38px;
+        border-radius: 10px;
+        border: 2px solid #334155;
+        background: #0F172A;
+        color: #F0F4F8;
+        font-size: 1em;
+        transition: all 0.3s ease;
+    }
+
+    .budget-input:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .budget-save-btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        color: #fff;
+        background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .budget-save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(59, 130, 246, 0.35);
+    }
+
+    .budget-status {
+        background: #0F172A;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .budget-status-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .budget-status-label {
+        color: #CBD5E1;
+        font-weight: 500;
+    }
+
+    .budget-status-value {
+        color: #F0F4F8;
+        font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .budget-progress {
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        background: #334155;
+        overflow: hidden;
+    }
+
+    .budget-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #22C55E 0%, #16A34A 100%);
+        transition: width 0.4s ease;
+    }
+
+    .budget-progress-fill.warn {
+        background: linear-gradient(90deg, #F97316 0%, #EA580C 100%);
+    }
+
+    .budget-alert {
+        margin-top: 14px;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 0.95em;
+        font-weight: 500;
+        border: 1px solid transparent;
+    }
+
+    .budget-alert.safe {
+        color: #86EFAC;
+        background: rgba(34, 197, 94, 0.12);
+        border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .budget-alert.exceeded {
+        color: #FCA5A5;
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .budget-alert.not-set {
+        color: #BFDBFE;
+        background: rgba(59, 130, 246, 0.12);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
     .empty-state-icon {
         font-size: 3.5em;
         margin-bottom: 15px;
@@ -407,6 +542,10 @@
 
     @media (max-width: 968px) {
         .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .budget-row {
             grid-template-columns: 1fr;
         }
 
@@ -490,6 +629,60 @@
                 <div class="stat-value">{{ expense_count }}</div>
             </div>
             <i class="fas fa-receipt stat-icon"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Budget Section -->
+<div class="card budget-section">
+    <h2><i class="fas fa-bullseye"></i> Monthly Budget ({{ current_month }})</h2>
+    <div class="budget-row">
+        <form action="/set-budget" method="POST" class="budget-form">
+            <div class="budget-input-wrap">
+                <i class="fas fa-rupee-sign"></i>
+                <input
+                    class="budget-input"
+                    type="number"
+                    name="budget_amount"
+                    step="0.01"
+                    min="1"
+                    placeholder="Set your monthly budget"
+                    value="{{ '%.2f'|format(monthly_budget) if monthly_budget is not none else '' }}"
+                    required
+                >
+            </div>
+            <button type="submit" class="budget-save-btn">
+                <i class="fas fa-save"></i> Save Budget
+            </button>
+        </form>
+
+        <div class="budget-status">
+            <div class="budget-status-line">
+                <span class="budget-status-label">Spent this month</span>
+                <span class="budget-status-value">₹{{ "%.0f"|format(current_month_total) }}</span>
+            </div>
+            <div class="budget-status-line">
+                <span class="budget-status-label">Budget</span>
+                <span class="budget-status-value">
+                    {% if monthly_budget is not none %}
+                        ₹{{ "%.0f"|format(monthly_budget) }}
+                    {% else %}
+                        Not set
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="budget-progress">
+                <div class="budget-progress-fill {% if budget_exceeded %}warn{% endif %}" style="width: {{ budget_usage_percent|round(0) if monthly_budget is not none else 0 }}%;"></div>
+            </div>
+
+            {% if monthly_budget is none %}
+                <div class="budget-alert not-set">Set a monthly budget to start tracking limit alerts.</div>
+            {% elif budget_exceeded %}
+                <div class="budget-alert exceeded">⚠️ Budget exceeded by ₹{{ "%.0f"|format(budget_exceeded_amount) }} this month.</div>
+            {% else %}
+                <div class="budget-alert safe">✅ You are within budget. Remaining: ₹{{ "%.0f"|format(budget_remaining) }}.</div>
+            {% endif %}
         </div>
     </div>
 </div>
