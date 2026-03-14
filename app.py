@@ -92,6 +92,49 @@ def init_db():
 init_db()
 
 
+def generate_insights(expenses, budget):
+    insights = []
+
+    budget_value = float(budget) if budget is not None else 10000.0
+
+    total_monthly_expenses = 0.0
+    category_totals = {}
+
+    for expense in expenses:
+        amount = float(expense['amount']) if expense['amount'] else 0.0
+        category = expense['category'] if expense['category'] else 'Other'
+
+        total_monthly_expenses += amount
+        category_totals[category] = category_totals.get(category, 0.0) + amount
+
+    if total_monthly_expenses <= 0:
+        return [
+            'No spending recorded for this month yet. Add expenses to get Smart Spending Insights.'
+        ]
+
+    category_percentages = {
+        category: (total / total_monthly_expenses) * 100
+        for category, total in category_totals.items()
+    }
+
+    for category, percentage in sorted(category_percentages.items(), key=lambda item: item[1], reverse=True):
+        if percentage > 40:
+            insights.append(
+                f'You are spending a large portion of your budget on {category}. Consider setting a limit.'
+            )
+
+    top_category = max(category_totals, key=category_totals.get)
+    insights.append(f'Your highest spending category this month is {top_category}.')
+
+    if budget_value > 0:
+        if total_monthly_expenses > budget_value:
+            insights.append('Warning: You have exceeded your monthly budget.')
+        elif total_monthly_expenses >= 0.8 * budget_value:
+            insights.append('You have used 80% of your monthly budget. Monitor your spending.')
+
+    return insights
+
+
 # Decorator to require login
 def login_required(f):
     @wraps(f)
@@ -419,6 +462,20 @@ def analytics_page():
     ).fetchone()
     current_month_total = current_month_result['total'] if current_month_result['total'] else 0
 
+    # Get monthly budget (fallback to default rule budget)
+    budget_result = conn.execute(
+        'SELECT budget_amount FROM budgets WHERE user_id = ? AND month = ?',
+        (user_id, current_month)
+    ).fetchone()
+    monthly_budget = budget_result['budget_amount'] if budget_result else 10000
+
+    # Get current month expenses for rule-based insights
+    monthly_expenses = conn.execute('''
+        SELECT amount, category
+        FROM expenses
+        WHERE user_id = ? AND strftime("%Y-%m", date) = ?
+    ''', (user_id, current_month)).fetchall()
+
     # Get last month total for comparison
     last_month = (datetime.now().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
     last_month_result = conn.execute(
@@ -463,6 +520,8 @@ def analytics_page():
     ''', (user_id,)).fetchall()
     
     conn.close()
+
+    smart_insights = generate_insights(monthly_expenses, monthly_budget)
     
     # Convert to list of dicts for JavaScript
     category_data_list = [dict(row) for row in category_data]
@@ -479,6 +538,8 @@ def analytics_page():
                          monthly_change_percent=monthly_change_percent,
                          monthly_change_direction=monthly_change_direction,
                          top_category=top_category,
+                         smart_insights=smart_insights,
+                         monthly_budget=monthly_budget,
                          category_data=category_data_list,
                          monthly_data=monthly_data_list)
 
